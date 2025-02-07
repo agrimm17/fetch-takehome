@@ -17,10 +17,8 @@
 // source code should be stored in git repo
 // include documentation to run app locally
 
-import App from './App.jsx'
+import App from './App'
 import { createRoot } from 'react-dom/client'
 
 const root = createRoot(document.querySelector('#root'))
 root.render(<App />);
-
-
