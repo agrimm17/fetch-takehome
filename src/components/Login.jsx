@@ -10,7 +10,7 @@ import {
 import { useState } from 'react';
 
 // ADD API CALL
-const Login = () => {
+const Login = ({loadDogs, getBreeds}) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   // console.log(email, name);
@@ -30,40 +30,23 @@ const Login = () => {
         name: name,
         email: email,
       }),
+      credentials: 'include',
     })
       .then((resp) => {
         if (!resp.ok) {
           throw new Error('Problem with login fetch response!');
         }
+        //This is broken - Don't know why (Should be resp.json())
         return resp.json;
       })
       .then((data) => {
         console.log('Login Successful', data);
+        // loadDogs()
+        getBreeds()
       })
       .catch((err) => {
         console.error('Caught an error!', err);
       });
-
-      console.log('Attempting to Get Dogs')
-      fetch('https://frontend-take-home-service.fetch.com/dogs/breed', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      })
-        .then((resp) => {
-          if (!resp.ok) {
-            throw new Error('Problem with /dogs fetch response!');
-          }
-          return resp.json;
-        })
-        .then((data) => {
-          console.log('Found the Dogs!', data);
-          dogs = data;
-        })
-        .catch((err) => {
-          console.error('Caught an error!', err);
-        });
   };
 
   return (

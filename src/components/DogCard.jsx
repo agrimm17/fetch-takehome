@@ -2,7 +2,7 @@ import { Box, Image, Text, Badge, Button } from '@chakra-ui/react';
 
 const DogCard = ({ dog, addFav }) => {
   const { name, age, breed, image, id } = dog;
-  // REVIEW THIS TO FIX STYLING
+  // BONUS: REVIEW THIS TO FIX STYLING
   return (
     <Box
       textAlign='center'
@@ -11,6 +11,7 @@ const DogCard = ({ dog, addFav }) => {
       overflow='hidden'
       boxShadow='md'
     >
+      {/* IMAGE NOT DISPLAYING PROPERLY */}
       <Image src={image} alt={`${name} the dog`} />
       <Box p='6'>
         <Badge borderRadius='full' px='2' colorScheme='teal'>
