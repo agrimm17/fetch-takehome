@@ -1,100 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Login from './components/Login';
 import DogCard from './components/DogCard';
-import { Box, SimpleGrid, Button, ButtonGroup } from '@chakra-ui/react';
+import Dropdown from './components/Dropdown';
+import { Box, SimpleGrid, Button } from '@chakra-ui/react';
 
-// THIS IS A SAMPLE, REPLACE WITH API DATA
-// let dogs = [
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.1,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.2,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.3,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.4,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.5,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.6,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10',
-//     image: undefined,
-//     id: 1.7,
-//   },
-//   {
-//     name: 'Bartholemew',
-//     breed: 'Dachshund',
-//     age: '10.8',
-//     image: undefined,
-//     id: 1.8,
-//   },
-//   {
-//     name: 'Buddy',
-//     breed: 'Golden Retriever',
-//     age: 3,
-//     image: undefined,
-//     id: 2,
-//   },
-//   {
-//     name: 'Max',
-//     breed: 'German Shepherd',
-//     age: 5,
-//     image: undefined,
-//     id: 3,
-//   },
-//   {
-//     name: 'Bella',
-//     breed: 'Labrador',
-//     age: 2,
-//     image: undefined,
-//     id: 4,
-//   },
-// ];
-let dogs = [];
-// let currDogs = [];
 let breedList = [];
-let next = undefined;
-let prev = undefined;
 let breedCount = 0;
 // ADD Authorization FROM SUCCESSFUL LOGIN
 // fetch('https://frontend-take-home-service.fetch.com/dogs/breed', {
@@ -120,30 +30,43 @@ let breedCount = 0;
 // BONUS: REVIEW THIS TO FIX STYLING
 
 const App = () => {
+
   // BONUS: Investigate if this could be done in a more efficient way
-  const [page, changePage] = useState(0);
   const [favs, editFavs] = useState([]);
+
+  useEffect(() => {
+    console.log('favs updated useEffect:', favs);
+  }, [favs]);
+
   const [currDogs, changeCurrDogs] = useState([]);
   const [pageButtons, updatePageButtons] = useState({
     next: undefined,
     prev: undefined,
   });
+  const [selectedBreed, setSelectedBreed] = useState('');
 
-  // useEffect(() => {
-  //   changeCurrDogs(
-  //     dogs.slice(0 + 25 * page, 25 + 25 * page).map((dog) => {
-  //       return <DogCard key={dog.id} dog={dog} addFav={addFav} />;
-  //     })
-  //   );
-  // }, [page]);
+  // BUG: Fix this so that when filtering by breed, you cannot see other breeds. Requires intense tinkering in getIds()
+  useEffect(() => {
+    console.log('Selected Breed:', selectedBreed);
+    if (selectedBreed) {
+      console.log('sorting by breed:', selectedBreed);
+      getIds(`/dogs/search?breeds=${selectedBreed}`);
+    }
+  }, [selectedBreed]);
 
   // BONUS: Add functionality to remove id if it's already in favs
   const addFav = (id) => {
-    if (!favs.includes(id)) {
-      editFavs([...favs, id]);
-    }
+    editFavs((prevFavs) => {
+      if (!prevFavs.includes(id)) {
+        // console.log('Previous Favs:', prevFavs);
+        // console.log(`Adding ${id}`);
+        return [...prevFavs, id];
+      } else {
+        // console.log(`${id} is already in favorites`);
+      }
+      return prevFavs;
+    });
   };
-  // console.log(favs);
 
   const getBreeds = () => {
     console.log('Attempting to Get Breed List');
@@ -162,7 +85,7 @@ const App = () => {
       .then((data) => {
         console.log('Found the breeds!', data);
         breedList = data;
-        loadDogs();
+        getIds();
       })
       .catch((err) => {
         console.error('Caught an error!', err);
@@ -170,16 +93,12 @@ const App = () => {
   };
 
   // Bonus: Update this to load more efficiently
-  const loadDogs = (
+  const getIds = (
     query = '/dogs/search?breeds=Affenpinscher',
     i = breedCount
   ) => {
     console.log('Attempting to Get Dogs', query);
     fetch(`https://frontend-take-home-service.fetch.com${query}`, {
-      // console.log('target breed:', breedList, breedList[i])
-      // fetch(
-      // `https://frontend-take-home-service.fetch.com/dogs/search?breeds=${breedList[i]}query`,
-      // {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -194,12 +113,22 @@ const App = () => {
       .then((data) => {
         console.log('Found the IDs!', data.resultIds);
         if (!data.resultIds[0]) {
-          console.log('ding!');
-          loadDogs(`/dogs/search?breeds=${breedList[i + 1]}`, i + 1);
+          console.log('Next Breed!', breedList[i + 1]);
+          getIds(`/dogs/search?breeds=${breedList[i + 1]}`, i + 1);
         } else {
           displayDogs(data.resultIds);
-          next = data.next;
-          prev = data.prev;
+          // Bug: This fails to update prev when shifting to a new breed
+          updatePageButtons({
+            next: data.next,
+            prev: data.prev,
+          });
+
+          // Minor Bug: These log one iteration late
+          console.log('pagenext', pageButtons.next);
+          console.log('pageprev', pageButtons.prev);
+          // next = data.next;
+          // prev = data.prev;
+          // console.log(prev)
           breedCount = i;
         }
       })
@@ -224,48 +153,78 @@ const App = () => {
         return resp.json();
       })
       .then((data) => {
+        console.log('Fav Dog Selected and returned:', data)
         changeCurrDogs(
           data.map((dog) => {
-            return <DogCard key={dog.id} dog={dog} addFav={addFav} />;
+            // console.log('making new dog', dog.id);
+            return <DogCard key={dog.id} dog={dog} addFav={addFav} favs={favs} />;
           })
         );
         console.log('updating currDog state!', currDogs);
-        // console.log('Found the Dogs!', data);
-        // dogs.push(...data);
-        // dogs = dogs.sort((a, b) => a.breed.localeCompare(b.breed))
-        // changeCurrDogs(
-        //   dogs.slice(0, 25).map((dog) => {
-        //     return <DogCard key={dog.id} dog={dog} addFav={addFav} />;
-        //   })
-        // );
       })
       .catch((err) => {
         console.error('Caught an error!', err);
       });
   };
 
-  // let currDogs = dogs.slice(0 + 9 * page, 9 + 9 * page).map((dog) => {
-  //   return <DogCard key={dog.id} dog={dog} addFav={addFav} />;
-  // });
-  // console.log(page);
-
+  const generateMatch = () => {
+    fetch('https://frontend-take-home-service.fetch.com/dogs/match', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(favs),
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Problem with /dogs/match post response!');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        finalMatch = data;
+        displayDogs([data.match])
+        console.log('Providing a match!', data);
+      })
+      .catch((err) => {
+        console.error('Caught an error!', err);
+      });
+  };
   // BONUS: Align these buttons
-  let pageSelectors = [];
-  for (let i = 0; i * 25 < dogs.length; i++) {
-    pageSelectors.push(<Button onClick={(e) => changePage(i)}>{i + 1}</Button>);
-  }
 
   // Store current page next/prev strings
-  // create buttons that call loadDogs(next/prev)
-  let nextPrev = [
-    <Button onClick={(e) => loadDogs(prev)}>Prev</Button>,
-    <Button onClick={(e) => loadDogs(next)}>Next</Button>,
-  ];
+  // create buttons that call getIds(next/prev)
+  let finalMatch = undefined;
+  let matchDisplay = undefined;
+  let nextPrev = undefined;
+  let dropdown = undefined;
+  let login = <Login getIds={getIds} getBreeds={getBreeds} />;
+  if (breedList[0]) {
+    dropdown = (
+      <Dropdown
+        breedList={breedList}
+        setSelectedBreed={setSelectedBreed}
+        selectedBreed={selectedBreed}
+      />
+    );
+    nextPrev = [
+      <Button onClick={(e) => getIds(pageButtons.prev)}>Prev</Button>,
+      <Button onClick={(e) => getIds(pageButtons.next)}>Next</Button>,
+      <Button onClick={(e) => generateMatch()}>generate match</Button>,
+    ];
+    login = undefined;
+  }
+
+  if (finalMatch) {
+    
+  }
 
   return (
     <Box p={5}>
-      <Login loadDogs={loadDogs} getBreeds={getBreeds} />
-      {/* {pageSelectors} */}
+      {matchDisplay}
+      {login}
+      {dropdown}
       {nextPrev}
       <SimpleGrid columns={[1, 2, 3, 4, 5]} spacing={5} mt={10}>
         {currDogs}
@@ -273,7 +232,6 @@ const App = () => {
           return <DogCard key={dog.id} dog={dog} />;
         })} */}
       </SimpleGrid>
-      {/* {pageSelectors} */}
     </Box>
   );
 };
