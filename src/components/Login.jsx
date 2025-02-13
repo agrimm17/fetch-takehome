@@ -1,23 +1,10 @@
-import {
-  Box,
-  Button,
-  Input,
-  Heading,
-  VStack,
-  // FormLabel,
-  // FormControl,
-} from '@chakra-ui/react';
+import { Box, Button, Input, Heading, VStack } from '@chakra-ui/react';
 import { useState } from 'react';
 
-// ADD API CALL
-const Login = ({loadDogs, getBreeds}) => {
+const Login = ({ loadDogs, getBreeds }) => {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  // console.log(email, name);
 
-  // const handleLogin = () => {
-  //   console.log(email, name)
-  // }
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log('Fetching Login Info!');
@@ -36,13 +23,11 @@ const Login = ({loadDogs, getBreeds}) => {
         if (!resp.ok) {
           throw new Error('Problem with login fetch response!');
         }
-        //This is broken - Don't know why (Should be resp.json())
         return resp.json;
       })
       .then((data) => {
         console.log('Login Successful', data);
-        // loadDogs()
-        getBreeds()
+        getBreeds();
       })
       .catch((err) => {
         console.error('Caught an error!', err);
@@ -65,27 +50,20 @@ const Login = ({loadDogs, getBreeds}) => {
       </Heading>
       <form onSubmit={handleLogin}>
         <VStack spacing={4}>
-          {/* <FormControl id='name' isRequired>
-            <FormLabel>Name</FormLabel> */}
-            <Input
-              type='name'
-              placeholder='Name'
-              id='name'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          {/* </FormControl>
-
-          <FormControl id='email' isRequired>
-            <FormLabel>Email</FormLabel> */}
-            <Input
-              type='email'
-              placeholder='Email'
-              id='email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          {/* </FormControl> */}
+          <Input
+            type='name'
+            placeholder='Name'
+            id='name'
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <Input
+            type='email'
+            placeholder='Email'
+            id='email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
           <Button backgroundColor='teal' width='full' type='submit'>
             {' '}

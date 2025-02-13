@@ -5,15 +5,13 @@ const DogCard = ({ dog, addFav, favs }) => {
   const { name, age, breed, img, id } = dog;
   const [isFav, adjustFav] = useState(false);
 
-  // BONUS BUG: This isn't working for some reason
   useEffect(() => {
-    console.log('Adjusting isFav', favs, id)
+    console.log('Adjusting isFav', favs, id);
     if (favs.includes(id)) {
       adjustFav(true);
     } else adjustFav(false);
   }, [favs]);
 
-  // BONUS: REVIEW THIS TO FIX STYLING
   return (
     <Box
       textAlign='center'
@@ -22,7 +20,6 @@ const DogCard = ({ dog, addFav, favs }) => {
       overflow='hidden'
       boxShadow='md'
     >
-      {/* IMAGE NOT DISPLAYING PROPERLY */}
       <Image
         src={img}
         alt={`${name} the dog`}

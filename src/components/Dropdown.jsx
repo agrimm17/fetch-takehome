@@ -1,26 +1,10 @@
-import React, { useState } from 'react';
-import { Select } from '@chakra-ui/react';
+import React from 'react';
 
-const Dropdown = ({ breedList, setSelectedBreed, selectedBreed}) => {
-
+const Dropdown = ({ breedList, setSelectedBreed, selectedBreed }) => {
   const handleChange = (event) => {
     setSelectedBreed(event.target.value);
-    // console.log('Selected breed:', event.target.value);
   };
 
-//   const breeds = [
-//     'Labrador Retriever',
-//     'German Shepherd',
-//     'Golden Retriever',
-//     'French Bulldog',
-//     'Bulldog',
-//     'Poodle',
-//     'Beagle',
-//     'Rottweiler',
-//     'German Shorthaired Pointer',
-//     'Dachshund',
-//   ];
-//   console.log('Breedlist:', breedList);
   return (
     <select
       placeholder='Select a dog breed'
