@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/fetch-takehome/static/js/main.aab9209c.js",
+    "index.html": "/fetch-takehome/index.html",
+    "main.aab9209c.js.map": "/fetch-takehome/static/js/main.aab9209c.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.aab9209c.js"
+  ]
+}

@@ -1,154 +1,189 @@
 import React, { useEffect, useState } from 'react';
 import Login from './components/Login';
 import DogCard from './components/DogCard';
-import { Box, SimpleGrid, Button, ButtonGroup } from '@chakra-ui/react';
+import Dropdown from './components/Dropdown';
+import { Box, SimpleGrid, Button } from '@chakra-ui/react';
 
-// THIS IS A SAMPLE, REPLACE WITH API DATA
-const dogs = [
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.1,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.2,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.3,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.4,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.5,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.6,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10',
-    image: undefined,
-    id: 1.7,
-  },
-  {
-    name: 'Bartholemew',
-    breed: 'Dachshund',
-    age: '10.8',
-    image: undefined,
-    id: 1.8,
-  },
-  {
-    name: 'Buddy',
-    breed: 'Golden Retriever',
-    age: 3,
-    image: undefined,
-    id: 2,
-  },
-  {
-    name: 'Max',
-    breed: 'German Shepherd',
-    age: 5,
-    image: undefined,
-    id: 3,
-  },
-  {
-    name: 'Bella',
-    breed: 'Labrador',
-    age: 2,
-    image: undefined,
-    id: 4,
-  },
-];
-
-// ADD Authorization FROM SUCCESSFUL LOGIN
-// fetch('https://frontend-take-home-service.fetch.com/dogs/breed', {
-//   headers: {
-//     'Content-Type': 'application/json',
-//     Authorization: '',
-//   },
-// })
-//   .then((resp) => {
-//     if (!resp.ok) {
-//       throw new Error('Problem with /dogs fetch response!');
-//     }
-//     return resp.json;
-//   })
-//   .then((data) => {
-//     console.log('Found the Dogs!', data);
-//     dogs = data;
-//   })
-//   .catch((err) => {
-//     console.error('Caught an error!', err);
-//   });
-
-// BONUS: REVIEW THIS TO FIX STYLING
+let breedList = [];
+let breedCount = 0;
 
 const App = () => {
-  // BONUS: Investigate if this could be done in a more efficient way
-  const [page, changePage] = useState(0);
   const [favs, editFavs] = useState([]);
 
-  // BONUS: Add functionality to remove id if it's already in favs
-  const addFav = (id) => {
-    if (!favs.includes(id)) {
-      editFavs([...favs, id]);
-    }
-  };
-  // console.log(favs)
+  useEffect(() => {
+    console.log('favs updated useEffect:', favs);
+  }, [favs]);
 
-  let currDogs = dogs.slice(0 + 9 * page, 9 + 9 * page).map((dog) => {
-    return <DogCard key={dog.id} dog={dog} addFav={addFav} />;
+  const [currDogs, changeCurrDogs] = useState([]);
+  const [pageButtons, updatePageButtons] = useState({
+    next: undefined,
+    prev: undefined,
   });
-  // console.log(page);
+  const [selectedBreed, setSelectedBreed] = useState('');
 
-  // BONUS: Align these buttons
-  let pageSelectors = [];
-  for (let i = 0; i * 9 < dogs.length; i++) {
-    pageSelectors.push(<Button onClick={(e) => changePage(i)}>{i + 1}</Button>);
+  useEffect(() => {
+    console.log('Selected Breed:', selectedBreed);
+    if (selectedBreed) {
+      console.log('sorting by breed:', selectedBreed);
+      getIds(`/dogs/search?breeds=${selectedBreed}`);
+    }
+  }, [selectedBreed]);
+
+  const addFav = (id) => {
+    editFavs((prevFavs) => {
+      if (!prevFavs.includes(id)) {
+        return [...prevFavs, id];
+      }
+      return prevFavs;
+    });
+  };
+
+  const getBreeds = () => {
+    console.log('Attempting to Get Breed List');
+    fetch(`https://frontend-take-home-service.fetch.com/dogs/breeds`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Problem with /breeds fetch response!');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        console.log('Found the breeds!', data);
+        breedList = data;
+        getIds();
+      })
+      .catch((err) => {
+        console.error('Caught an error!', err);
+      });
+  };
+
+  const getIds = (
+    query = '/dogs/search?breeds=Affenpinscher',
+    i = breedCount
+  ) => {
+    fetch(`https://frontend-take-home-service.fetch.com${query}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Problem with /dogs/search fetch response!');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        console.log('Found the IDs!', data.resultIds);
+        if (!data.resultIds[0]) {
+          getIds(`/dogs/search?breeds=${breedList[i + 1]}`, i + 1);
+        } else {
+          displayDogs(data.resultIds);
+          updatePageButtons({
+            next: data.next,
+            prev: data.prev,
+          });
+          breedCount = i;
+        }
+      })
+      .catch((err) => {
+        console.error('Caught an error!', err);
+      });
+  };
+
+  const displayDogs = (dogIds) => {
+    fetch('https://frontend-take-home-service.fetch.com/dogs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(dogIds),
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Problem with /dogs post response!');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        console.log('Fav Dog Selected and returned:', data);
+        changeCurrDogs(
+          data.map((dog) => {
+            // console.log('making new dog', dog.id);
+            return (
+              <DogCard key={dog.id} dog={dog} addFav={addFav} favs={favs} />
+            );
+          })
+        );
+        console.log('updating currDog state!', currDogs);
+      })
+      .catch((err) => {
+        console.error('Caught an error!', err);
+      });
+  };
+
+  const generateMatch = () => {
+    fetch('https://frontend-take-home-service.fetch.com/dogs/match', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(favs),
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Problem with /dogs/match post response!');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        finalMatch = data;
+        displayDogs([data.match]);
+        console.log('Providing a match!', data);
+      })
+      .catch((err) => {
+        console.error('Caught an error!', err);
+      });
+  };
+
+  let finalMatch = undefined;
+  let matchDisplay = undefined;
+
+  let nextPrev = undefined;
+  let dropdown = undefined;
+  let login = <Login getIds={getIds} getBreeds={getBreeds} />;
+  if (breedList[0]) {
+    dropdown = (
+      <Dropdown
+        breedList={breedList}
+        setSelectedBreed={setSelectedBreed}
+        selectedBreed={selectedBreed}
+      />
+    );
+    nextPrev = [
+      <Button onClick={(e) => getIds(pageButtons.prev)}>Prev</Button>,
+      <Button onClick={(e) => getIds(pageButtons.next)}>Next</Button>,
+      <Button onClick={(e) => generateMatch()}>generate match</Button>,
+    ];
+    login = undefined;
   }
 
   return (
     <Box p={5}>
-      <Login />
-      {pageSelectors}
-      <SimpleGrid columns={[1, 2, 3]} spacing={5} mt={10}>
+      {matchDisplay}
+      {login}
+      {dropdown}
+      {nextPrev}
+      <SimpleGrid columns={[1, 2, 3, 4, 5]} spacing={5} mt={10}>
         {currDogs}
-        {/* {dogs.map((dog, i) => {
-          return <DogCard key={dog.id} dog={dog} />;
-        })} */}
       </SimpleGrid>
-      {pageSelectors}
     </Box>
   );
 };

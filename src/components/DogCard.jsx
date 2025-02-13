@@ -1,8 +1,17 @@
 import { Box, Image, Text, Badge, Button } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
 
-const DogCard = ({ dog, addFav }) => {
-  const { name, age, breed, image, id } = dog;
-  // REVIEW THIS TO FIX STYLING
+const DogCard = ({ dog, addFav, favs }) => {
+  const { name, age, breed, img, id } = dog;
+  const [isFav, adjustFav] = useState(false);
+
+  useEffect(() => {
+    console.log('Adjusting isFav', favs, id);
+    if (favs.includes(id)) {
+      adjustFav(true);
+    } else adjustFav(false);
+  }, [favs]);
+
   return (
     <Box
       textAlign='center'
@@ -11,7 +20,13 @@ const DogCard = ({ dog, addFav }) => {
       overflow='hidden'
       boxShadow='md'
     >
-      <Image src={image} alt={`${name} the dog`} />
+      <Image
+        src={img}
+        alt={`${name} the dog`}
+        height='200px'
+        width='100%'
+        objectFit='cover'
+      />
       <Box p='6'>
         <Badge borderRadius='full' px='2' colorScheme='teal'>
           {breed}
@@ -20,7 +35,13 @@ const DogCard = ({ dog, addFav }) => {
           {name}
         </Text>
         <Text color='gray.500'>Age: {age}</Text>
-        <Button borderRadius='7px' onClick={(e) => addFav(id)}>Save</Button>
+        <Button
+          borderRadius='7px'
+          onClick={(e) => addFav(id)}
+          backgroundColor={isFav ? 'green' : 'white'}
+        >
+          Save
+        </Button>
       </Box>
     </Box>
   );
